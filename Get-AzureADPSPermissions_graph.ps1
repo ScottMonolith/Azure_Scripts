@@ -914,7 +914,11 @@ if ($DelegatedPermissions -or (-not ($DelegatedPermissions -or $ApplicationPermi
         if ($grant.Scope) {
             $grant.Scope.Split(" ") | Where-Object { $_ } | ForEach-Object {
                 $scope = $_
-
+                if ($ShowProgress) {
+                    Write-Progress -Activity "Retrieving SP permissions..." `
+                                -Status ("Checked {0}/{1} SPs" -f $i++, $servicePrincipalCount) `
+                                -PercentComplete (($i / $servicePrincipalCount) * 100)
+                }
                 $grantDetails =  [ordered]@{
                     "PermissionType" = "Delegated"
                     "ClientName" = $app.DisplayName
