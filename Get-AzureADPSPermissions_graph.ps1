@@ -910,12 +910,14 @@ if ($DelegatedPermissions -or (-not ($DelegatedPermissions -or $ApplicationPermi
     Write-Verbose "Retrieving OAuth2PermissionGrants..."
     GetOAuth2PermissionGrants -FastMode:$fastQueryMode | ForEach-Object {
         $grant = $_
+        $app = Get-MgServicePrincipal -ServicePrincipalId $grant.ClientId
         if ($grant.Scope) {
             $grant.Scope.Split(" ") | Where-Object { $_ } | ForEach-Object {
                 $scope = $_
 
                 $grantDetails =  [ordered]@{
                     "PermissionType" = "Delegated"
+                    "ClientName" = $app.DisplayName
                     "ClientObjectId" = $grant.ClientId
                     "ResourceObjectId" = $grant.ResourceId
                     "Permission" = $scope
@@ -959,9 +961,10 @@ if ($ApplicationPermissions -or (-not ($DelegatedPermissions -or $ApplicationPer
         Get-MgServicePrincipalAppRoleAssignment -ServicePrincipalId $sp.Id -All  `
         | Where-Object { $_.PrincipalType -eq "ServicePrincipal" } | ForEach-Object {
             $assignment = $_
-
+            $app = Get-MgServicePrincipal -ServicePrincipalId $assignment.PrincipalId
             $grantDetails = [ordered]@{
                 "PermissionType" = "Application"
+                "ClientName" = $app.DisplayName
                 "ClientObjectId" = $assignment.PrincipalId
                 "ResourceObjectId" = $assignment.ResourceId
                 "ResourceDisplayName" = $assignment.ResourceDisplayName
